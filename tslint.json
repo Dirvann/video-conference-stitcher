@@ -1,0 +1,24 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-config-prettier",
+    "tslint-eslint-rules"
+  ],
+  "jsRules": {
+    "no-console": false,
+    "semicolon": [true, "never"],
+    "quotemark": [true, "single"],
+    "indent": [true,"spaces", 2]
+  },
+  "rules": {
+    "trailing-comma": [ false ],
+    "no-console": false,
+    "quotemark": [true,"single"],
+    "semicolon": [true, "never"],
+    "only-arrow-functions": [false, "allow-declarations", "allow-named-functions"],
+    "indent": [true,"spaces", 2],
+    "ter-indent": [true, 2]
+  },
+  "rulesDirectory": []
+}
