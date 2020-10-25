@@ -1,9 +1,12 @@
 import  {spawn} from 'child_process'
+import User from './User'
 
-export default class Video {
+export default class Media {
   public readonly path: string
   public readonly hasAudio: boolean
+  public readonly hasVideo: boolean
   public readonly startTime: number
+  public user: User|null = null
   public id: number = -1
   public duration:number = -1
   public audioChannels: number = -1
@@ -13,17 +16,23 @@ export default class Video {
    *
    * @param path
    * @param startTime time in milliseconds
+   * @param hasVideo
    * @param hasAudio
    */
-  constructor(path: string, startTime:number,hasAudio:boolean = true) {
+  constructor(path: string, startTime:number, hasVideo:boolean, hasAudio:boolean) {
     this.path = path
+    if(!(hasAudio || hasVideo)) throw new Error('media must contain audio or video')
     this.hasAudio = hasAudio
+    this.hasVideo = hasVideo
     this.startTime = startTime
   }
 
   init():PromiseLike<any> {
+
+    // TODO not looking for stream channels if doesn't contain audio.
+    // Would it work with just audio files?
     return new Promise((resolve, reject)  => {
-      Promise.all([this.getEntry('format=duration'), this.getEntry('stream=channels')])
+      Promise.all([this.getEntry('format=duration'), this.hasAudio?this.getEntry('stream=channels'):'-1'])
           .then(([duration ,channels]) => {
             this.duration = Math.round(parseFloat(duration)*1000)
             this.audioChannels = parseInt(channels, 10)

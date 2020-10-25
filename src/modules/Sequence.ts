@@ -1,19 +1,23 @@
-import Video from './Video'
+import Media from './Media'
 import SequenceStep from './SequenceStep'
 import CommandExecutor from './CommandExecutor'
 import colors from 'colors'
+import User from './User'
 
 
 export default class Sequence {
   public readonly id: string | number
-  public videos: Video[]
+  public mediaList: Media[]
   public sequenceSteps:SequenceStep[] = []
-  public outputVideo: Video
+  public outputVideo: Media
   public layout: VideoLayout
   public encodingOptions: EncodingOptions
-  constructor(id:string|number,videos:Video[]=[], outputVideo:Video, layout:VideoLayout, encOpt?: EncodingOptions) {
+  constructor(id:string|number, users:User[]=[], outputVideo:Media, layout:VideoLayout, encOpt?: EncodingOptions) {
     this.id = id
-    this.videos = videos
+    this.mediaList = []
+    users.forEach(user => {
+      this.mediaList.push(...user.media)
+    })
 
     const defaultEncodingOptions:EncodingOptions = {
       size:{w:1280,h:720},
@@ -37,8 +41,8 @@ export default class Sequence {
     this.layout = layout
   }
 
-  addVideo(video:Video):void {
-    this.videos.push(video)
+  addVideo(video:Media):void {
+    this.mediaList.push(video)
   }
 
   encode():Promise<any> {
@@ -51,67 +55,67 @@ export default class Sequence {
   createSequenceSteps():Promise<any> {
 
     // check videos
-    return this.videos
-        .reduce(async (p: Promise<void>, vid: Video) => p.then(() => vid.initialized?Promise.resolve():vid.init()), Promise.resolve())
+    return this.mediaList
+        .reduce(async (p: Promise<void>, med: Media) => p.then(() => med.initialized?Promise.resolve():med.init()), Promise.resolve())
         .catch(err => {
           console.log('error initializing video files', err)
           throw err
         }).then(() => {
       // Order videos
-          this.videos
+          this.mediaList
           .sort((a,b) => a.startTime > b.startTime?1:(a.startTime===b.startTime?0:-1))
           .forEach((vid, index) => vid.setId(index))
 
-          const queue:VideoPoint[] = []
-          this.videos.forEach(vid => {
+          interface MediaPoint {
+            start_point: boolean
+            time: number
+            media_id: number
+          }
+
+          const queue:MediaPoint[] = []
+          this.mediaList.forEach(vid => {
             queue.push({
               start_point: true,
               time: vid.startTime,
-              video_id: vid.id
+              media_id: vid.id
             })
             queue.push({
               start_point: false,
               time: vid.startTime + vid.duration,
-              video_id: vid.id
+              media_id: vid.id
             })
           })
 
-          interface VideoPoint {
-            start_point: boolean
-            time: number
-            video_id: number
-          }
-
-          queue.sort((a:VideoPoint,b:VideoPoint) => a.time < b.time?1:(a.time===b.time?0:-1))
+          queue.sort((a:MediaPoint,b:MediaPoint) => a.time < b.time?1:(a.time===b.time?0:-1))
 
           console.log(`\n---- sort queue -----\n`, queue)
 
       // building sequences
 
           let prevTime:number = -1
-          const currentVideos:Video[] = []
+          const currentVideos:Media[] = []
           this.sequenceSteps = []
           while(queue.length > 0) {
         // @ts-ignore
-            const point:VideoPoint = queue.pop()
+            const point:MediaPoint = queue.pop()
             if((queue.length === 0 || point.time !== prevTime) && prevTime !== -1 && currentVideos.length >= 0) {
               const step:SequenceStep = new SequenceStep(`Seq${this.sequenceSteps.length}`,[...currentVideos],prevTime, point.time,this.encodingOptions.size, this.layout)
               this.sequenceSteps.push(step)
             }
             if(point.start_point) {
-              currentVideos.push(this.videos[point.video_id])
+              currentVideos.push(this.mediaList[point.media_id])
             } else {
-              const index:number = currentVideos.findIndex(vid=> vid.id===point.video_id)
+              const index:number = currentVideos.findIndex(vid=> vid.id===point.media_id)
               currentVideos.splice(index,1)
             }
             prevTime = point.time
           }
           console.log('\n---- Videos ----')
-          this.videos.forEach(vid => console.log('id', vid.id, 'start', vid.startTime, 'len', vid.duration, 'achan', vid.audioChannels, vid.path))
+          this.mediaList.forEach(vid => console.log('id', vid.id, 'start', vid.startTime, 'len', vid.duration, 'achan', vid.audioChannels, vid.path))
           console.log('output:',this.outputVideo.path)
           console.log('\n---- Sequences ----')
           this.sequenceSteps.forEach(step => {
-            console.log(step.id, 'v:', '[' + step.videos.map(vid => vid.id.toString()).join(',') + ']', 'start', step.startTime,'end', step.startTime + step.duration, 'len',step.duration)
+            console.log(step.id, 'v:', '[' + step.mediaList.map(vid => vid.id.toString()).join(',') + ']', 'start', step.startTime,'end', step.startTime + step.duration, 'len',step.duration)
           })
         })
   }
@@ -123,8 +127,8 @@ export default class Sequence {
 
     const logging:string = this.encodingOptions.loglevel?`-v ${this.encodingOptions.loglevel}`:`-v quiet -stats`
 
-    command.push('ffmpeg ${logging} ')
-    command.push(this.videos.map(video => `-i "${video.path}"`).join(' ') + ' ')
+    command.push(`ffmpeg ${logging} `)
+    command.push(this.mediaList.map(video => `-i "${video.path}"`).join(' ') + ' ')
     command.push(`-filter_complex_script `)
     command.push('pipe:0 ')
     const quality:string = this.encodingOptions.crf?`-crf ${this.encodingOptions.crf}`:`-b:v ${this.encodingOptions.bitrate}`

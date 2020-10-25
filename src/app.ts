@@ -1,6 +1,6 @@
 import express from 'express'
 import config from './config'
-import Video from './modules/Video'
+import Media from './modules/Media'
 import path from 'path'
 import Sequence from './modules/Sequence'
 import MosaicLayout from './modules/layouts/MosaicLayout'
@@ -9,8 +9,9 @@ import fs from 'fs'
 import colors from 'colors'
 import PresenterLayout from './modules/layouts/PresenterLayout'
 import WaveformData from 'waveform-data'
-import decode from 'audio-decode'
-import {AudioContext} from 'web-audio-api'
+// import decode from 'audio-decode'
+// import {AudioContext} from 'web-audio-api'
+import User from './modules/User'
 const app = express()
 
 
@@ -21,22 +22,22 @@ app.get('/', async (req, res) => {
 
 function command(encode:boolean=true) {
   const videoFolder = path.join(__dirname, '../videos')
-  const videos: Video[] = [
-    new Video(path.join(videoFolder, 'vid1.mp4'), 0),
-    new Video(path.join(videoFolder, 'vid2.mp4'), 5000),
-    new Video(path.join(videoFolder, 'vid3.mp4'), 5000),
-    new Video(path.join(videoFolder, 'vid3.mp4'), 6000),
-    new Video(path.join(videoFolder, 'vid3.mp4'), 5000),
-    new Video(path.join(videoFolder, 'vid3.mp4'), 5000),
-    new Video(path.join(videoFolder,'vid4.mp4'), 2000),
-    new Video(path.join(videoFolder,'vid4.mp4'), 4000),
-    new Video(path.join(videoFolder,'vid5.mp4'), 3000),
-    new Video(path.join(videoFolder,'vid5.mp4'), 0),
-    new Video(path.join(videoFolder,'vid-spie-40.mp4'), 2000),
+  const videos: Media[] = [
+    new Media(path.join(videoFolder, 'vid1.mp4'), 0, true, true),
+    new Media(path.join(videoFolder, 'vid2.mp4'), 5000, true, true),
+    new Media(path.join(videoFolder, 'vid3.mp4'), 5000, true, true),
+    new Media(path.join(videoFolder, 'vid3.mp4'), 6000, true, true),
+    new Media(path.join(videoFolder, 'vid3.mp4'), 5000, true, true),
+    new Media(path.join(videoFolder, 'vid3.mp4'), 5000, true, true),
+    new Media(path.join(videoFolder,'vid4.mp4'), 2000, true, true),
+    new Media(path.join(videoFolder,'vid4.mp4'), 4000, true, true),
+    new Media(path.join(videoFolder,'vid5.mp4'), 3000, true, true),
+    new Media(path.join(videoFolder,'vid5.mp4'), 0, true, true),
+    new Media(path.join(videoFolder,'vid-spie-40.mp4'), 2000, true, true),
     // new Video(path.join(videoFolder,'vid-spie-40.mp4'), 8000),
-    new Video(path.join(videoFolder,'vid-spie-60.mp4'), 0)
+    new Media(path.join(videoFolder,'vid-spie-60.mp4'), 0, true, true)
   ]
-  const videoOut: Video = new Video(path.join(__dirname, '../videos', 'present_720.mp4'), -1)
+  const videoOut: Media = new Media(path.join(__dirname, '../videos', 'vid-aud2.mp4'), -1, true, true)
   const encodingOptions: EncodingOptions = {
     crf: 20,
     loglevel: 'verbose',
@@ -47,9 +48,24 @@ function command(encode:boolean=true) {
   }
   const layout:VideoLayout = new PresenterLayout()
 
+
+  const userMedia1:Media[] = [
+    new Media(path.join(videoFolder,'vid1_v.mp4'), 0, true, false),
+    new Media(path.join(videoFolder,'vid1_a.aac'), 5000, false, true)
+  ]
+
+  const userMedia2:Media[] = [
+    new Media(path.join(videoFolder,'vid1.mp4'), 2000, true, true)
+  ]
+
+  const users:User[] =[
+    new User('user1', userMedia1, 'KEVIN'),
+    new User('user2', userMedia2, 'JEFF')
+  ]
+
   Promise.resolve().then(async () => {
 
-    const sequence: Sequence = new Sequence(0, videos,videoOut, layout, encodingOptions)
+    const sequence: Sequence = new Sequence(0, users,videoOut, layout, encodingOptions)
     ;(encode?sequence.encode():sequence.generateCommand()).then((comm:string[]) => {
       // tslint:disable-next-line:no-unused-expression
       if(comm) {
@@ -64,10 +80,6 @@ function command(encode:boolean=true) {
     console.error('Sequence error:')
     console.error(err)
   })
-}
-
-function printAudio() {
-  
 }
 
 app.listen(config.server.port, () => {
@@ -122,46 +134,48 @@ process.stdin.on('data', function(text:string) {
       success: 'bgBlue',
       error: 'red'
     })
-
-    decode(buffer).then((audioBuffer: AudioBuffer) => {
-      // console.log(audioBuffer)
-      // const audioContext = new AudioContext()
-      /*const options = {
-        audio_context: audioContext,
-        audio_buffer: audioBuffer,
-        scale: 128
-      }
-      WaveformData.createFromAudio(options,(err,wave) => {
-        if(err) {
-          console.error(colors.red(err.toString()))
+    if(false) {
+      /*decode(buffer)*/Promise.resolve().then(() => 'null').then((audioBuffer: /*audioBuffer*/ any) => {
+        // console.log(audioBuffer)
+        // const audioContext = new AudioContext()
+        /*const options = {
+          audio_context: audioContext,
+          audio_buffer: audioBuffer,
+          scale: 128
         }
-        console.log(wave)
-      })*/
-      let max = 0
-      audioBuffer.getChannelData(0).forEach((val:number,hello) => {
-        val > max?'':max=val
+        WaveformData.createFromAudio(options,(err,wave) => {
+          if(err) {
+            console.error(colors.red(err.toString()))
+          }
+          console.log(wave)
+        })*/
+        let max = 0
+        audioBuffer.getChannelData(0).forEach((val:number,hello:any) => {
+          return val > max?'':max=val
+        })
+        const dat = audioBuffer.getChannelData(1)
+
+        const arr:number[] = []
+
+        for(let i=0; i < dat.length; i+= Math.floor(dat.length/100)) {
+          let tmp = 0
+          for(let j=i; j < i+Math.floor(dat.length/100); j++) {
+            tmp += dat[j]
+          }
+          arr.push(tmp/dat.length*100*100*1000)
+        }
+        console.log(arr)
+        console.log(max.toString())
+
+        fs.writeFileSync('out.txt', audioBuffer.getChannelData(0).toString(), 'utf-8')
+      }).catch((err: any) => {
+        console.error(colors.blue('some error'))
+        // @ts-ignore
+        console.log('red'.error)
+        console.log(err)
       })
-      let dat = audioBuffer.getChannelData(1)
+    }
 
-      let arr:number[] = []
-
-      for(let i=0; i < dat.length; i+= Math.floor(dat.length/100)) {
-        let tmp = 0
-        for(let j=i; j < i+Math.floor(dat.length/100); j++) {
-          tmp += dat[j]
-        }
-        arr.push(tmp/dat.length*100*100*1000)
-      }
-      console.log(arr)
-      console.log(max.toString().error)
-
-      fs.writeFileSync('out.txt', audioBuffer.getChannelData(0).toString(), 'utf-8')
-    }).catch((err: any) => {
-      console.error(colors.blue('some error'))
-      // @ts-ignore
-      console.log('red'.error)
-      console.log(err)
-    })
     
   }
 

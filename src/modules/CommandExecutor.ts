@@ -29,6 +29,14 @@ export default {
       })
     })
   },
+  /**
+   * pipes the given value to the process run by the command
+   * @param value
+   *        string to pipe
+   * @param command
+   *        command the value will be piped to
+   * @param log
+   */
   pipeExec(value:string, command:string, log:boolean=false) {
     return new Promise<any>(function(resolve, reject){
 
