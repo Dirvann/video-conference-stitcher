@@ -20,6 +20,45 @@ app.get('/', async (req, res) => {
   res.send('hey')
 })
 
+function basicEncode(encode:boolean=true) {
+  // GET LIST OF MEDIA PER USER
+  const videoFolder = path.join(__dirname, '../videos')
+  const userMedia1:Media[] = [
+    new Media(path.join(videoFolder,'vid1_v.mp4'), 0, true, false),
+    new Media(path.join(videoFolder,'vid1_a.aac'), 5000, false, true)
+  ]
+  const userMedia2:Media[] = [
+    new Media(path.join(videoFolder,'vid1.mp4'), 2000, true, true)
+  ]
+
+  // CREATE USERS WITH THEIR MEDIA FILES
+  const users:User[] =[
+    new User('user1', userMedia1, 'KEVIN'),
+    new User('user2', userMedia2, 'JEFF')
+  ]
+
+  // CREATE SEQUENCE SETTINGS
+  const videoLayout:VideoLayout = new PresenterLayout()
+  const outputMedia: Media = new Media(path.join(__dirname, '../videos', 'basicOutput.mp4'), -1, true, true)
+  const encodingOptions: EncodingOptions = {
+    crf: 20,
+    loglevel: 'verbose',
+    size:{
+      w: 1280,
+      h: 720
+    }
+  }
+
+  // CREATE A SEQUENCE WITH GIVEN SETTINGS
+  const sequence: Sequence = new Sequence(0, users,outputMedia, videoLayout, encodingOptions)
+
+  // ENCODE THE SEQUENCE
+  sequence.encode().then(comm => {
+    console.log(comm)
+  })
+
+}
+
 function command(encode:boolean=true) {
   const videoFolder = path.join(__dirname, '../videos')
   const videos: Media[] = [
@@ -115,6 +154,9 @@ process.stdin.on('data', function(text:string) {
   }
   if(text === 'g') {
     command(false)
+  }
+  if(text === 'b') {
+    basicEncode()
   }
   if(text === 'l') {
     (new MosaicLayout()).getBoxes(10,{w:400,h:400})

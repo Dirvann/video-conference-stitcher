@@ -1,15 +1,11 @@
 Conference-recorder
 
 TODO
-- sync start time of recording
-- max resolution of connected users
+-[x] link user to video audio file
+-[x] user with audio, no video, but active speaker -> placeholder
+-[ ] implement custom user priority map 
 
-- link 
 
-link user to video audio file
-
-problems
-user with audio, no video, but active speaker -> placeholder
 
 
 
