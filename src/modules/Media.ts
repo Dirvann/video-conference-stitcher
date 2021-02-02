@@ -40,7 +40,7 @@ export default class Media {
             resolve()
           })
           .catch((err: any) => {
-            console.error('error loading video file', err)
+            console.error('error loading video file at ',this.path, err)
             reject(err)
           })
     })

@@ -5,14 +5,12 @@ import User from './User'
 
 
 export default class Sequence {
-  public readonly id: string | number
   public mediaList: Media[]
   public sequenceSteps:SequenceStep[] = []
   public outputVideo: Media
   public layout: VideoLayout
   public encodingOptions: EncodingOptions
-  constructor(id:string|number, users:User[]=[], outputVideo:Media, layout:VideoLayout, encOpt?: EncodingOptions) {
-    this.id = id
+  constructor(users:User[]=[], outputVideo:Media, layout:VideoLayout, encOpt?: EncodingOptions) {
     this.mediaList = []
     users.forEach(user => {
       this.mediaList.push(...user.media)
@@ -51,7 +49,7 @@ export default class Sequence {
     })
   }
 
-  createSequenceSteps():Promise<any> {
+  private createSequenceSteps():Promise<any> {
 
     // check videos
     return this.mediaList
