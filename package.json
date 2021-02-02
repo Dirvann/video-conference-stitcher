@@ -1,11 +1,11 @@
 {
-  "name": "conference-recorder",
-  "version": "1.0.0",
-  "description": "Recording a video conference with RTP",
+  "name": "video-conference-stitcher",
+  "version": "0.1.0",
+  "description": "Combine separately recorded recordings from a video conference into a single video file.",
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon dist/app.js",
+    "start": "node lib/app.js",
     "tsc": "tsc",
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix"
   },
@@ -22,16 +22,11 @@
       "name": "Dirk Vanbeveren",
       "email": "dirvann.dev@gmail.com",
       "url": ""
-    }],
+    }
+  ],
   "license": "ISC",
   "dependencies": {
-    "audio-decode": "^1.4.0",
-    "colors": "^1.4.0",
-    "express": "^4.17.1",
-    "socket.io": "^2.3.0",
-    "typescript": "^3.9.7",
-    "waveform-data": "^3.3.2",
-    "web-audio-api": "^0.2.2"
+    "typescript": "^3.9.7"
   },
   "devDependencies": {
     "@types/express": "^4.17.7",

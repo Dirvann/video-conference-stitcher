@@ -1,24 +1,6 @@
-import express from 'express'
-import config from './config'
-import Media from './modules/Media'
 import path from 'path'
-import Sequence from './modules/Sequence'
-import MosaicLayout from './modules/layouts/MosaicLayout'
-import GridLayout from './modules/layouts/GridLayout'
-import fs from 'fs'
-import colors from 'colors'
-import PresenterLayout from './modules/layouts/PresenterLayout'
-import WaveformData from 'waveform-data'
-// import decode from 'audio-decode'
-// import {AudioContext} from 'web-audio-api'
-import User from './modules/User'
-const app = express()
-
-
-app.get('/', async (req, res) => {
-  console.log('got request')
-  res.send('hey')
-})
+import {User, Layouts, Sequence, Media} from '../index'
+const {PresenterLayout, GridLayout, MosaicLayout} = Layouts
 
 function basicEncode(encode:boolean=true) {
   // GET LIST OF MEDIA PER USER
@@ -103,7 +85,6 @@ function command(encode:boolean=true) {
   ]
 
   Promise.resolve().then(async () => {
-
     const sequence: Sequence = new Sequence(0, users,videoOut, layout, encodingOptions)
     ;(encode?sequence.encode():sequence.generateCommand()).then((comm:string[]) => {
       // tslint:disable-next-line:no-unused-expression
@@ -120,10 +101,6 @@ function command(encode:boolean=true) {
     console.error(err)
   })
 }
-
-app.listen(config.server.port, () => {
-  console.log(`listening on port ${config.server.port}`)
-})
 
 process.stdin.resume()
 process.stdin.setEncoding('utf8')
@@ -160,65 +137,6 @@ process.stdin.on('data', function(text:string) {
   }
   if(text === 'l') {
     (new MosaicLayout()).getBoxes(10,{w:400,h:400})
-  }
-  
-  if(text === 'a') {
-    const videoFolder = path.join(__dirname, '../videos')
-    const buffer:Buffer = fs.readFileSync(path.join(videoFolder, 'vid1.mp3'))
-
-
-    /**/
-      // arr.push(Math.round(sub/(Math.floor(file.length/100))))
-    colors.setTheme({
-      info: 'bgGreen',
-      help: 'cyan',
-      warn: 'yellow',
-      success: 'bgBlue',
-      error: 'red'
-    })
-    if(false) {
-      /*decode(buffer)*/Promise.resolve().then(() => 'null').then((audioBuffer: /*audioBuffer*/ any) => {
-        // console.log(audioBuffer)
-        // const audioContext = new AudioContext()
-        /*const options = {
-          audio_context: audioContext,
-          audio_buffer: audioBuffer,
-          scale: 128
-        }
-        WaveformData.createFromAudio(options,(err,wave) => {
-          if(err) {
-            console.error(colors.red(err.toString()))
-          }
-          console.log(wave)
-        })*/
-        let max = 0
-        audioBuffer.getChannelData(0).forEach((val:number,hello:any) => {
-          return val > max?'':max=val
-        })
-        const dat = audioBuffer.getChannelData(1)
-
-        const arr:number[] = []
-
-        for(let i=0; i < dat.length; i+= Math.floor(dat.length/100)) {
-          let tmp = 0
-          for(let j=i; j < i+Math.floor(dat.length/100); j++) {
-            tmp += dat[j]
-          }
-          arr.push(tmp/dat.length*100*100*1000)
-        }
-        console.log(arr)
-        console.log(max.toString())
-
-        fs.writeFileSync('out.txt', audioBuffer.getChannelData(0).toString(), 'utf-8')
-      }).catch((err: any) => {
-        console.error(colors.blue('some error'))
-        // @ts-ignore
-        console.log('red'.error)
-        console.log(err)
-      })
-    }
-
-    
   }
 
   if (text === 'quit') {
