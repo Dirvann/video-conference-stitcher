@@ -93,7 +93,7 @@ sequence.encode().then(comm => {
 
 ### Classes
 
-#### Media(path: string, startTime:number, hasVideo:boolean, hasAudio:boolean)
+### Media(path: string, startTime:number, hasVideo:boolean, hasAudio:boolean)
 
 Defines a single video / audio file on the file system. The file can contain audio and video at the same time or separately.
 
@@ -111,11 +111,10 @@ const {Media} = require('video-conference-stitcher')
 const mediaObject = new Media('/home/user/vid.mp4', 2000, true, true)
 ```
 
+&nbsp;
+&nbsp;
 
-
-
-
-#### User(id:string|number,media:Media[], name?:string|undefined) 
+### User(id:string|number,media:Media[], name?:string|undefined) 
 
 A user in the video conference. May have multiple streams.
 
@@ -137,11 +136,10 @@ OR
 const user = new User('user123', mediaList)
 ```
 
+&nbsp;
+&nbsp;
 
-
-
-
-#### Layouts (GridLayout, PresenterLayout, MosaicLayout)
+### Layouts
 
 Objects that can be used for different output layouts or in other words change the arrangement of the separate video streams on the screen.
 
@@ -159,11 +157,10 @@ const videoLayout = new Layouts.GridLayout()
 const seq = new Sequence(.., ..,.., videoLayout, ..)
 ```
 
+&nbsp;
+&nbsp;
 
-
-
-
-#### Sequence (users:User[], outputVideo:Media, layout:VideoLayout, encOpt?: EncodingOptions)
+### Sequence (users:User[], outputVideo:Media, layout:VideoLayout, encOpt?: EncodingOptions)
 
 ##### Parameters
 
