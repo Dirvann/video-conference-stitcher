@@ -12,6 +12,7 @@ The minimal information needed is:
 - file of the recording (audio and video may or may not be separate)
 
 
+![Alt text](docs/images/combining-example.jpg?raw=true "Encoding example")
 
 ## Requirements
 
