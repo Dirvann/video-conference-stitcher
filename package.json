@@ -2,7 +2,7 @@
   "name": "conference-recorder",
   "version": "1.0.0",
   "description": "Recording a video conference with RTP",
-  "main": "src/app.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon dist/app.js",
@@ -12,9 +12,17 @@
   "keywords": [
     "rtp",
     "webrtc",
-    "recording"
+    "recording",
+    "nodejs",
+    "ffmpeg"
   ],
   "author": "Dirk Vanbeveren",
+  "contributors": [
+    {
+      "name": "Dirk Vanbeveren",
+      "email": "dirvann.dev@gmail.com",
+      "url": ""
+    }],
   "license": "ISC",
   "dependencies": {
     "audio-decode": "^1.4.0",

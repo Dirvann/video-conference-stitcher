@@ -5,7 +5,7 @@ TODO
 
 - [x] user with audio, no video, but active speaker -> placeholder
 
-- [ ] implement custom user priority map 
+- [ ] implement custom user priority map
 
 
 

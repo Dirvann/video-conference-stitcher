@@ -40,6 +40,7 @@ export default {
   pipeExec(value:string, command:string, log:boolean=false) {
     return new Promise<any>(function(resolve, reject){
 
+      // Pretty printing the command in the terminal
       if(log)console.log(
           '\n----- COMMAND -----\n',
           command
