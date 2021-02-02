@@ -9,6 +9,10 @@
     "tsc": "tsc",
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dirvann/video-conference-stitcher.git"
+  },
   "keywords": [
     "rtp",
     "webrtc",
