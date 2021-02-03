@@ -190,6 +190,58 @@ const seq = new Sequence(users,outputMedia, videoLayout)
 
 ```
 
+&nbsp;
+
+### Types
+
+### EncodingOptions
+
+Object containing encoding options for encoding the sequence.
+
+##### Properties
+
+- **crf**(optional): Quality parameter for encoding, more documentation [here](https://trac.ffmpeg.org/wiki/Encode/H.264).
+  - default: 22
+  - type: number
+- **bitrate**(optional): Setting output bitrate. Will be overridden if crf is also defined.
+  - type: string
+- **size**: Resolution of the output video.
+  - type: object   -> {w: number, h: number}
+- **loglevel**(optional): Log level for ffmpeg. More documentation for loglevel in [ffmpeg documentation](https://ffmpeg.org/ffmpeg.html#toc-Generic-options)
+  - options: number| 'quiet' | 'panic' | 'fatal' | 'error' | 'warning' | 'info' | 'verbose' | 'debug' | 'trace'
+
+##### Usage
+
+```js
+const encodingOptions = {
+    crf: 20,
+    size: {
+        w: 1280,
+        h: 720
+    },
+    loglevel: 'quiet'
+}
+
+--------------------------
+const encodingOptions = {
+    bitrate: '2000M',
+    size: {
+        w: 1000,
+        h: 500
+    }
+}
+```
+
+
+
+## Implementation in [mediasoup](https://mediasoup.org)
+
+A call can be recorded by connecting mediasoup to a recorder like **ffmpeg** or **gstreamer**. There is a good example for recording in **[THIS PROJECT](https://github.com/ethand91/mediasoup3-record-demo)**.
+
+The files should be saved with the timestamp of when each individual stream has started recording.
+
+These separate files can be used to combined with the video-conference-stitcher tool.
+
 
 
 ## TODO

@@ -1,6 +1,6 @@
 {
   "name": "video-conference-stitcher",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Combine separately recorded recordings from a video conference into a single video file.",
   "main": "lib/index.js",
   "scripts": {
