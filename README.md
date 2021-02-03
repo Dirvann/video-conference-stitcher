@@ -16,8 +16,8 @@ The minimal information needed is:
 
 ## Requirements
 
-- ffmpeg
-- linux system (windows not supported at this time)
+- [ffmpeg](https://ffmpeg.org/download.html)
+- linux system (windows not supported at this time, [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) is a good option for running on windows)
 
 ## Installation
 
