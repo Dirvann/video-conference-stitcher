@@ -10,20 +10,28 @@ export default class Sequence {
   public outputVideo: Media
   public layout: VideoLayout
   public encodingOptions: EncodingOptions
-  constructor(users:User[]=[], outputVideo:Media, layout:VideoLayout, encOpt?: EncodingOptions) {
+  public users: User[]
+  public watermark: Media|undefined
+  public duration:number
+  constructor(users:User[]=[], outputVideo:Media, layout:VideoLayout, encOpt?: EncodingOptions, watermark?:Media|undefined) {
     this.mediaList = []
+    this.users = users
     users.forEach(user => {
       this.mediaList.push(...user.media)
     })
 
     const defaultEncodingOptions:EncodingOptions = {
       size:{w:1280,h:720},
-      crf:22
+      crf:22,
+      showTimeStamp: false
     }
     if(encOpt && encOpt.crf && encOpt.bitrate) throw new Error('cannot use bitrate and crf simultaneously')
     const encoding:EncodingOptions = {
       size: encOpt?encOpt.size:defaultEncodingOptions.size,
-      loglevel: encOpt?.loglevel
+      loglevel: encOpt?.loglevel,
+      showTimeStamp:encOpt?.showTimeStamp?encOpt.showTimeStamp:defaultEncodingOptions.showTimeStamp,
+      // throw error if show timestamp is trua and this is empty
+      timeStampStartTime: encOpt?.timeStampStartTime
     }
     if(!encOpt?.crf && !encOpt?.bitrate) {
       encoding.crf = defaultEncodingOptions.crf
@@ -36,6 +44,24 @@ export default class Sequence {
 
     this.outputVideo = outputVideo
     this.layout = layout
+    this.watermark = watermark
+
+
+
+    let minTime:number = -1
+    let maxTime:number = -1
+
+    this.mediaList.forEach(media => {
+      if(media.isBackground)return
+      if(media.startTime < minTime || minTime === -1) minTime = media.startTime
+      if(media.duration + media.startTime > maxTime || maxTime === -1) maxTime = media.startTime + media.duration
+    })
+
+    this.duration = maxTime - minTime
+
+    if(!this.encodingOptions.timeStampStartTime) {
+      this.encodingOptions.timeStampStartTime = minTime
+    }
   }
 
   addVideo(video:Media):void {
@@ -47,6 +73,23 @@ export default class Sequence {
     return this.generateCommand().then(([filter,command]) => {
       return CommandExecutor.pipeExec(filter,command,true)
     })
+  }
+
+  private getNoVideoBackgrounds(currentMedia:Media[]):Media[] {
+    const userIds:(string|number)[] = this.users.map(user => user.id)
+    currentMedia.forEach(media => {
+      const index = userIds.indexOf(media.user?.id || -1)
+      if(index > -1 && media.hasVideo)userIds.splice(index,1)
+    })
+
+    const backgroundMedia:Media[] = []
+
+    userIds.forEach(userId => {
+      const med:Media|undefined = this.mediaList.find(media => media.isBackground && userId === media.user?.id)
+      if(med) backgroundMedia.push(med)
+    })
+
+    return backgroundMedia
   }
 
   private createSequenceSteps():Promise<any> {
@@ -71,6 +114,7 @@ export default class Sequence {
 
           const queue:MediaPoint[] = []
           this.mediaList.forEach(vid => {
+            if(vid.isBackground) return
             queue.push({
               start_point: true,
               time: vid.startTime,
@@ -88,7 +132,7 @@ export default class Sequence {
           console.log(`\n---- sort queue -----\n`, queue)
 
       // building sequences
-
+          // TODO if only 1 user, put background object for other user, if no user, put 2 backgrounds
           let prevTime:number = -1
           const currentVideos:Media[] = []
           this.sequenceSteps = []
@@ -96,7 +140,13 @@ export default class Sequence {
         // @ts-ignore
             const point:MediaPoint = queue.pop()
             if((queue.length === 0 || point.time !== prevTime) && prevTime !== -1 && currentVideos.length >= 0) {
-              const step:SequenceStep = new SequenceStep(`Seq${this.sequenceSteps.length}`,[...currentVideos],prevTime, point.time,this.encodingOptions.size, this.layout)
+
+              const backgrounds:Media[]  = this.getNoVideoBackgrounds(currentVideos)
+              let list:Media[] = [...backgrounds,...currentVideos]
+              // Sorting video by user id to stay on same side
+              // @ts-ignore
+              list = list.sort((a,b) => a.user?.id < b.user?.id?-1:(a.user?.id === b.user?.id?0:1))
+              const step:SequenceStep = new SequenceStep(`Seq${this.sequenceSteps.length}`,list,prevTime, point.time,this.encodingOptions.size, this.layout)
               this.sequenceSteps.push(step)
             }
             if(point.start_point) {
@@ -125,7 +175,11 @@ export default class Sequence {
     const logging:string = this.encodingOptions.loglevel?`-v ${this.encodingOptions.loglevel}`:`-v quiet -stats`
 
     command.push(`ffmpeg ${logging} `)
+    // command.push(`-vsync 1 -async 1 `)
     command.push(this.mediaList.map(video => `-i "${video.path}"`).join(' ') + ' ')
+    if(this.watermark) {
+      command.push(`-i ${this.watermark.path} `)
+    }
     command.push(`-filter_complex_script `)
     command.push('pipe:0 ')
     const quality:string = this.encodingOptions.crf?`-crf ${this.encodingOptions.crf}`:`-b:v ${this.encodingOptions.bitrate}`
@@ -133,7 +187,32 @@ export default class Sequence {
 
     const filter:string[] = []
     filter.push(`${this.sequenceSteps.map(step => step.generateFilter()).join('')}`)
-    filter.push(`${this.sequenceSteps.map(step => `[${step.id}_out_v][${step.id}_out_a]`).join('')}concat=n=${this.sequenceSteps.length}:v=1:a=1[vid][aud]`)
+    filter.push(`${this.sequenceSteps.map(step => `[${step.id}_out_v][${step.id}_out_a]`).join('')}concat=n=${this.sequenceSteps.length}:v=1:a=1`)
+    if(this.encodingOptions.showTimeStamp) {
+      filter.push('[vid_no_ts][aud];')
+      filter.push(`[vid_no_ts]drawtext=x=5:y=5:fontcolor=white:fontsize=20:box=1:boxcolor=black:line_spacing=3:text='%{pts\\:gmtime\\:${this.encodingOptions.timeStampStartTime}\\:%A, %d, %B %Y %I\\\\\\:%M\\\\\\:%S %p}'`)
+
+      if(this.watermark) {
+        filter.push('[vid_no_wm];')
+        // scale watermark
+        const size:Size = this.encodingOptions.size
+        const box:VideoBox = {
+          w:size.w/2,
+          h:size.h/2,
+          x:size.w/2 - (size.w/5),
+          y:size.h/2 - (size.h/5)
+        }
+        // filter.push(`[${this.mediaList.length}:v]trim=0:${this.duration / 1000 },setpts=PTS-STARTPTS,scale=w='if(gt(iw/ih,${box.w}/(${box.h})),${box.w},-2)':h='if(gt(iw/ih,${box.w}/(${box.h})),-2,${box.h})':eval=init[scaled_wm];`)
+        // filter.push(`[vid_no_wm][scaled_wm]overlay=x=${box.x}:y=${box.y}`)
+        filter.push(`[vid_no_wm][${this.mediaList.length}:v]overlay=x=${box.x}:y=${box.y}`)
+      }
+      filter.push(`[vid]`)
+    } else {
+      filter.push(`[vid][aud]`)
+    }
+
+
+
 
     return Promise.all([filter.join(''),command.join('')])
   }

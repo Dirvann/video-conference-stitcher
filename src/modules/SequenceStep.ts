@@ -7,6 +7,8 @@ export default class SequenceStep {
   public readonly duration: number
   public readonly size: Size
   private readonly layout: VideoLayout
+  private readonly showNameOverVideo: boolean
+  private readonly showTimeStamp: boolean
 
   constructor(id: string, mediaList: Media[], startTime: number, endTime: number, size:Size, layout:VideoLayout) {
     this.id = id
@@ -15,38 +17,61 @@ export default class SequenceStep {
     this.duration = endTime - startTime
     this.size = size
     this.layout = layout
-    if(mediaList.length === 0) throw new Error('At least one video must be added to the sequence')
+    this.showNameOverVideo = true
+    this.showTimeStamp = true
+    // if(mediaList.length === 0) throw new Error('At least one video must be added to the sequence step')
   }
 
   generateFilter():string {
     // All generated videos. Audio without linked video and video files
-    const videoList = this.mediaList.filter(media => media.hasVideo ||
+    const videoList = this.mediaList.filter(media => media.hasVideo || media.isBackground ||
         (media.hasAudio &&
             !media.hasVideo &&
-            !this.mediaList.some(other => other.hasVideo && media.user && other.user?.id === media.user?.id)))
+            !this.mediaList.some(other => (other.hasVideo||other.isBackground) && media.user && other.user?.id === media.user?.id)) )
+
+    // All background images for the users
+    // const backgroundsList = this.mediaList.filter(media => media.isBackground)
 
     // TODO I assume videos are sorted by their id small to big
     const boxes:VideoBox[] = this.layout.getBoxes(videoList.length, this.size)
     // if(this.getDuration() < 30) return `nullsrc=s=${this.size.w}x${this.size.h}:d=${this.getDuration()/1000}[${this.id}_out_v];anullsrc,atrim=0:${this.getDuration()/1000}[${this.id}_out_a];`
 
+
+    // Input a black background as background input, or directly to output if no video
     const out:string[] = []
-    out.push(`color=s=${this.size.w}x${this.size.h},trim=0:${this.duration / 1000 }[${this.id}_bg];`)
+    if(videoList.length > 0) {
+      out.push(`color=s=${this.size.w}x${this.size.h},trim=0:${this.duration / 1000 }[${this.id}_bg];`)
+    } else {
+      // TODO add backgrounds over this
+      out.push(`color=s=${this.size.w}x${this.size.h},trim=0:${this.duration / 1000 }[${this.id}_out_v];`)
+    }
+
 
 
     // --------------- TRIM/SCALE VIDEOS ----------------------- //
     let lastBoxIndex = 0
 
-    videoList.forEach((vid, ind) => {
+    videoList.forEach((vid:Media, ind:number) => {
       const box = boxes[ind]
       lastBoxIndex = ind+1
         // Trim video
-      if(vid.hasVideo) {
+      // check if is video or find a video of same user as current video (for is no video????) to test
+      if(vid.hasVideo || videoList.find(v => v.user?.id === vid.user?.id && (v.hasVideo))) {
         out.push(`[${vid.id}:v]trim=${(this.startTime - vid.startTime) / 1000}:${(this.duration + this.startTime - vid.startTime) / 1000 },setpts=PTS-STARTPTS,`)
+        // out.push(`drawtext=text='${vid.user?.name}':x=5:y=5:fontcolor=black:fontsize=25,`)
+      // if background, make video of the input image file and add name in middle
+      } else if(vid.isBackground) {
+        out.push(`[${vid.id}:v]trim=0:${this.duration / 1000 },drawtext=text='${vid.user?.name}':x=(w-tw)/2:y=((h-th)/2):fontcolor=black:fontsize=55,`)
+
+        // if audio, create background color with text
       } else {
         out.push(`color=s=${this.size.w}x${this.size.h}:c=green@1.0,trim=0:${this.duration / 1000 },drawtext=text='${vid.user?.name}':x=(w-tw)/2:y=((h-th)/2):fontcolor=black:fontsize=55,`)
       }
         // scale fit in box
-      out.push(`scale=w='if(gt(iw/ih,${box.w}/(${box.h})),${box.w},-2)':h='if(gt(iw/ih,${box.w}/(${box.h})),-2,${box.h})':eval=init[${this.id}_${vid.id}_v];`)
+      out.push(`scale=w='if(gt(iw/ih,${box.w}/(${box.h})),${box.w},-2)':h='if(gt(iw/ih,${box.w}/(${box.h})),-2,${box.h})':eval=init`)
+      if(this.showNameOverVideo)
+        out.push(`,drawtext=text='${vid.user?.name}':x=5:y=5:fontcolor=white:fontsize=20:box=1:boxcolor=black:line_spacing=3`)
+      out.push(`[${this.id}_${vid.id}_v];`)
     })
 
       // ---------------- OVERLAY VIDEOS ----------------------- //
@@ -67,6 +92,8 @@ export default class SequenceStep {
       } else {
         keyIn = `${this.id}_overlay_${prevVideoId}`
       }
+
+
       out.push(`[${keyIn}][${this.id}_${vid.id}_v]overlay=x='(${box.w}-w)/2+${box.x}':y='(${box.h}-h)/2+${box.y}':eval=init${prevVideoId === -1?':shortest=1':''}[${keyOut}];`)
 
       prevVideoId = vid.id

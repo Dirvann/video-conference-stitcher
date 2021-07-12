@@ -5,12 +5,13 @@ export default class Media {
   public readonly path: string
   public readonly hasAudio: boolean
   public readonly hasVideo: boolean
-  public readonly startTime: number
+  public startTime: number
   public user: User|null = null
   public id: number = -1
   public duration:number = -1
   public audioChannels: number = -1
   public initialized:boolean = false
+  public isBackground:boolean = false
 
   /**
    *
@@ -18,13 +19,18 @@ export default class Media {
    * @param startTime time in milliseconds
    * @param hasVideo
    * @param hasAudio
+   * @param isBackground
    */
-  constructor(path: string, startTime:number, hasVideo:boolean, hasAudio:boolean) {
+  constructor(path: string, startTime:number, hasVideo:boolean, hasAudio:boolean, isBackground?:boolean) {
     this.path = path
-    if(!(hasAudio || hasVideo)) throw new Error('media must contain audio or video')
+    if(!(hasAudio || hasVideo || isBackground)) throw new Error('media must contain audio, video or a background image.')
+
+    if(isBackground && (hasAudio || hasVideo)) throw new Error('Media cannot have background combined with audio or video')
     this.hasAudio = hasAudio
     this.hasVideo = hasVideo
     this.startTime = startTime
+    this.isBackground = isBackground || false
+    if(this.isBackground) startTime = -1
   }
 
   init():PromiseLike<any> {
@@ -32,9 +38,9 @@ export default class Media {
     // TODO not looking for stream channels if doesn't contain audio.
     // Would it work with just audio files?
     return new Promise((resolve, reject)  => {
-      Promise.all([this.getEntry('format=duration'), this.hasAudio?this.getEntry('stream=channels'):'-1'])
+      Promise.all([this.isBackground?'-1':this.getEntry('format=duration'), this.hasAudio?this.getEntry('stream=channels'):'-1'])
           .then(([duration ,channels]) => {
-            this.duration = Math.round(parseFloat(duration)*1000)
+            this.duration = duration==='-1'?-1:Math.round(parseFloat(duration)*1000)
             this.audioChannels = parseInt(channels, 10)
             this.initialized = true
             resolve()
