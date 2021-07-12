@@ -70,7 +70,7 @@ export default class SequenceStep {
         // scale fit in box
       out.push(`scale=w='if(gt(iw/ih,${box.w}/(${box.h})),${box.w},-2)':h='if(gt(iw/ih,${box.w}/(${box.h})),-2,${box.h})':eval=init`)
       if(this.showNameOverVideo)
-        out.push(`,drawtext=text='${vid.user?.name}':x=5:y=5:fontcolor=white:fontsize=20:box=1:boxcolor=black:line_spacing=3`)
+        out.push(`,drawtext=text='${vid.user?.name}':x=5:y=h-th-5:fontcolor=white:fontsize=20:box=1:boxcolor=black:line_spacing=3`)
       out.push(`[${this.id}_${vid.id}_v];`)
     })
 

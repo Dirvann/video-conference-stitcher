@@ -5,14 +5,15 @@ const {PresenterLayout, GridLayout, MosaicLayout} = Layouts
 
 async function basicEncode(encode:boolean=true) {
   // GET LIST OF MEDIA PER USER
-  const videoFolder = path.join(__dirname, '../../videos/ameelio')
+  // const videoFolder = path.join(__dirname, '../../videos/ameelio')
+  const videoFolder = path.join(__dirname, '../../videos/corrupt/mkv')
   const filenames:string[] = await fs.promises.readdir(videoFolder)
   const users:User[] = extractUsersFromFilenames(filenames,videoFolder)
 
   // normalizeTimes(users)
   // CREATE SEQUENCE SETTINGS
   const videoLayout:VideoLayout = new MosaicLayout()
-  const outputMedia: Media = new Media(path.join(videoFolder,'..','rendered', 'basicOutput.mp4'), -1, true, true)
+  const outputMedia: Media = new Media(path.join(__dirname,'..','..','videos','rendered', 'basicOutput.mp4'), -1, true, true)
   // WIP
   // const watermark: Media = new Media(path.join(videoFolder,'..','images', 'ameelio_logo.png'),-1,false,false,true)
   const encodingOptions: EncodingOptions = {
