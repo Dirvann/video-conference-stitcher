@@ -24,7 +24,7 @@ async function basicEncode(encode:boolean=true) {
     },
     showTimeStamp:true,
    // timeStampStartTime:1626088347 // is automatically calculated from media files
-    gmtTimeOffset: -7
+    gmtTimeOffset: -5
   }
 
   // CREATE A SEQUENCE WITH GIVEN SETTINGS

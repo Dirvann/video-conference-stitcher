@@ -72,6 +72,30 @@ export default class Sequence {
     this.mediaList.push(video)
   }
 
+  getTimezoneString(timezoneOffset:number):string {
+    switch(timezoneOffset){
+    case -5: {
+      return 'CDT'
+    }
+    case -6: {
+      return 'CST'
+    }
+    case -4: {
+      return 'EDT'
+    }
+    case -8: {
+      return 'PST'
+    }
+    case -7: {
+      return 'PDT'
+    }
+    default: {
+      return `UTC ${timezoneOffset>=0?'+':''}${timezoneOffset}`
+    }
+    }
+  }
+  
+
   encode():Promise<any> {
     console.log('start encoding')
     return this.generateCommand().then(([filter,command]) => {
@@ -197,7 +221,7 @@ export default class Sequence {
       filter.push('[vid_no_ts][aud];')
       filter.push(`[vid_no_ts]drawtext=x=5:y=5:fontcolor=white:fontsize=20:box=1:boxcolor=black:line_spacing=3:`)
       // @ts-ignore
-      filter.push(`text='%{pts\\:gmtime\\:${this.encodingOptions.timeStampStartTime}\\:%A, %d, %B %Y %I\\\\\\:%M\\\\\\:%S %p} GMT ${this.encodingOptions.gmtTimeOffset>=0?'+':''}${this.encodingOptions.gmtTimeOffset}'`)
+      filter.push(`text='%{pts\\:gmtime\\:${this.encodingOptions.timeStampStartTime}\\:%A, %d, %B %Y %I\\\\\\:%M\\\\\\:%S %p} ${this.getTimezoneString(this.encodingOptions.gmtTimeOffset)}'`)
 
       if(this.watermark) {
         filter.push('[vid_no_wm];')
