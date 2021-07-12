@@ -23,7 +23,8 @@ export default class Sequence {
     const defaultEncodingOptions:EncodingOptions = {
       size:{w:1280,h:720},
       crf:22,
-      showTimeStamp: false
+      showTimeStamp: false,
+      gmtTimeOffset: 0
     }
     if(encOpt && encOpt.crf && encOpt.bitrate) throw new Error('cannot use bitrate and crf simultaneously')
     const encoding:EncodingOptions = {
@@ -31,7 +32,8 @@ export default class Sequence {
       loglevel: encOpt?.loglevel,
       showTimeStamp:encOpt?.showTimeStamp?encOpt.showTimeStamp:defaultEncodingOptions.showTimeStamp,
       // throw error if show timestamp is trua and this is empty
-      timeStampStartTime: encOpt?.timeStampStartTime
+      timeStampStartTime: encOpt?.timeStampStartTime,
+      gmtTimeOffset: encOpt?.gmtTimeOffset?encOpt.gmtTimeOffset:defaultEncodingOptions.gmtTimeOffset
     }
     if(!encOpt?.crf && !encOpt?.bitrate) {
       encoding.crf = defaultEncodingOptions.crf
@@ -60,8 +62,10 @@ export default class Sequence {
     this.duration = maxTime - minTime
 
     if(!this.encodingOptions.timeStampStartTime) {
-      this.encodingOptions.timeStampStartTime = minTime
+      this.encodingOptions.timeStampStartTime = minTime/1000 + (!!this.encodingOptions.gmtTimeOffset?this.encodingOptions.gmtTimeOffset*60*60:0)
     }
+
+
   }
 
   addVideo(video:Media):void {
@@ -146,7 +150,8 @@ export default class Sequence {
               // Sorting video by user id to stay on same side
               // @ts-ignore
               list = list.sort((a,b) => a.user?.id < b.user?.id?-1:(a.user?.id === b.user?.id?0:1))
-              const step:SequenceStep = new SequenceStep(`Seq${this.sequenceSteps.length}`,list,prevTime, point.time,this.encodingOptions.size, this.layout)
+              const step:SequenceStep = new SequenceStep(`Seq${this.sequenceSteps.length}`,list,prevTime, point.time,
+                  this.encodingOptions.size, this.layout, !!this.encodingOptions.showTimeStamp)
               this.sequenceSteps.push(step)
             }
             if(point.start_point) {
@@ -190,7 +195,9 @@ export default class Sequence {
     filter.push(`${this.sequenceSteps.map(step => `[${step.id}_out_v][${step.id}_out_a]`).join('')}concat=n=${this.sequenceSteps.length}:v=1:a=1`)
     if(this.encodingOptions.showTimeStamp) {
       filter.push('[vid_no_ts][aud];')
-      filter.push(`[vid_no_ts]drawtext=x=5:y=5:fontcolor=white:fontsize=20:box=1:boxcolor=black:line_spacing=3:text='%{pts\\:gmtime\\:${this.encodingOptions.timeStampStartTime}\\:%A, %d, %B %Y %I\\\\\\:%M\\\\\\:%S %p}'`)
+      filter.push(`[vid_no_ts]drawtext=x=5:y=5:fontcolor=white:fontsize=20:box=1:boxcolor=black:line_spacing=3:`)
+      // @ts-ignore
+      filter.push(`text='%{pts\\:gmtime\\:${this.encodingOptions.timeStampStartTime}\\:%A, %d, %B %Y %I\\\\\\:%M\\\\\\:%S %p} GMT ${this.encodingOptions.gmtTimeOffset>=0?'+':''}${this.encodingOptions.gmtTimeOffset}'`)
 
       if(this.watermark) {
         filter.push('[vid_no_wm];')

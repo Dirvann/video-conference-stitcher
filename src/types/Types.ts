@@ -9,7 +9,11 @@ declare interface EncodingOptions {
   size:Size,
   loglevel?:number| 'quiet' | 'panic' | 'fatal' | 'error' | 'warning' | 'info' | 'verbose' | 'debug' | 'trace',
   showTimeStamp?:boolean,
-  timeStampStartTime?:number
+  timeStampStartTime?:number,
+  /**
+   * number of the gmt time offset in hours (can be positive or negative)
+   */
+  gmtTimeOffset?:number
 }
 
 declare interface VideoBox {

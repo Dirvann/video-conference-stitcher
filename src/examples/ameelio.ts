@@ -13,7 +13,8 @@ async function basicEncode(encode:boolean=true) {
   // CREATE SEQUENCE SETTINGS
   const videoLayout:VideoLayout = new MosaicLayout()
   const outputMedia: Media = new Media(path.join(videoFolder,'..','rendered', 'basicOutput.mp4'), -1, true, true)
-  const watermark: Media = new Media(path.join(videoFolder,'..','images', 'ameelio_logo.png'),-1,false,false,true)
+  // WIP
+  // const watermark: Media = new Media(path.join(videoFolder,'..','images', 'ameelio_logo.png'),-1,false,false,true)
   const encodingOptions: EncodingOptions = {
     crf: 20,
     loglevel: 'verbose',
@@ -22,7 +23,8 @@ async function basicEncode(encode:boolean=true) {
       h: 720
     },
     showTimeStamp:true,
-   // timeStampStartTime:1626088347
+   // timeStampStartTime:1626088347 // is automatically calculated from media files
+    gmtTimeOffset: -7
   }
 
   // CREATE A SEQUENCE WITH GIVEN SETTINGS

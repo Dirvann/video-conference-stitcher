@@ -10,7 +10,7 @@ export default class SequenceStep {
   private readonly showNameOverVideo: boolean
   private readonly showTimeStamp: boolean
 
-  constructor(id: string, mediaList: Media[], startTime: number, endTime: number, size:Size, layout:VideoLayout) {
+  constructor(id: string, mediaList: Media[], startTime: number, endTime: number, size:Size, layout:VideoLayout,showTimeStamp:boolean) {
     this.id = id
     this.mediaList = mediaList
     this.startTime = startTime
@@ -18,7 +18,7 @@ export default class SequenceStep {
     this.size = size
     this.layout = layout
     this.showNameOverVideo = true
-    this.showTimeStamp = true
+    this.showTimeStamp = showTimeStamp
     // if(mediaList.length === 0) throw new Error('At least one video must be added to the sequence step')
   }
 

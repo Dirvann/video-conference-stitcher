@@ -28,7 +28,7 @@ export default class Media {
     if(isBackground && (hasAudio || hasVideo)) throw new Error('Media cannot have background combined with audio or video')
     this.hasAudio = hasAudio
     this.hasVideo = hasVideo
-    this.startTime = startTime
+    this.startTime = parseInt(String(startTime),10)
     this.isBackground = isBackground || false
     if(this.isBackground) startTime = -1
   }
