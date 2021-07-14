@@ -62,7 +62,7 @@ export default class Sequence {
     this.duration = maxTime - minTime
 
     if(!this.encodingOptions.timeStampStartTime) {
-      this.encodingOptions.timeStampStartTime = minTime/1000 + (!!this.encodingOptions.gmtTimeOffset?this.encodingOptions.gmtTimeOffset*60*60:0)
+      this.encodingOptions.timeStampStartTime = Math.round(minTime/1000) + (!!this.encodingOptions.gmtTimeOffset?this.encodingOptions.gmtTimeOffset*60*60:0)
     }
 
 
