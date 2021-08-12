@@ -28,7 +28,7 @@
       "url": ""
     }
   ],
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "typescript": "^3.9.7"
   },
