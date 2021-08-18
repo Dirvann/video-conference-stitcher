@@ -21,3 +21,5 @@ app-backup.ts
 lib/app-backup.js
 
 lib/app-backup.js.map
+
+lib/**/*
