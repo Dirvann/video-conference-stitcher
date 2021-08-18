@@ -8,7 +8,8 @@
     "example": "node lib/examples/simple.js",
     "build": "tsc",
     "watch": "tsc -w",
-    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix"
+    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
+    "postinstall": "npx tsc"
   },
   "repository": {
     "type": "git",
