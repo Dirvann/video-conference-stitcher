@@ -44,7 +44,7 @@ export default class Media {
             for(let i = 0; i < 30; i++) {
               duration = this.isBackground ? '-1' : await this.getEntry('format=duration')
               this.duration = duration==='-1'?-1:Math.round(parseFloat(duration)*1000)
-              if(!Number.isNaN(this.duration) && !this.isBackground) {
+              if(!Number.isNaN(this.duration) || this.isBackground) {
                 break
               } else {
                 console.log(`The duration of Media ${this.path} parsed as NaN, trying again. (attempt ${i+1}/30)`)
