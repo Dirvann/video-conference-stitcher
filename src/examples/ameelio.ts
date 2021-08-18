@@ -8,6 +8,7 @@ async function basicEncode(encode:boolean=true) {
   // const videoFolder = path.join(__dirname, '../../videos/ameelio')
   // const videoFolder = path.join(__dirname, '../../videos/corrupt/mkv')
   const videoFolder = path.join(__dirname, '../../videos/ameelio_error2')
+  // @ts-ignore
   const filenames:string[] = await fs.promises.readdir(videoFolder)
   const users:User[] = extractUsersFromFilenames(filenames,videoFolder)
 

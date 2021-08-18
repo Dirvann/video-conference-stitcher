@@ -72,17 +72,17 @@ export default class Media {
       const ls = spawn(command, [], {shell: true})
       ls.stdout.on('data', data => {
         if(log)console.log(`stdout: ${data}`)
-        resolve(data)
+        resolve(data.toString())
       })
 
       ls.stderr.on('data', data => {
         if(log)console.log(`stderr: ${data}`)
-        reject(data)
+        reject(data.toString())
       })
 
       ls.on('error', (error) => {
         if(log)console.log(`error: ${error.message}`)
-        reject(error)
+        reject(error.toString())
       })
 
       ls.on('close', code => {
