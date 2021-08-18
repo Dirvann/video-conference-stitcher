@@ -204,6 +204,7 @@ export default class Sequence {
     const logging:string = this.encodingOptions.loglevel?`-v ${this.encodingOptions.loglevel}`:`-v quiet -stats`
 
     command.push(`ffmpeg ${logging} `)
+    command.push(`-fflags +igndts `)
     // command.push(`-vsync 1 -async 1 `)
     command.push(this.mediaList.map(video => `-i "${video.path}"`).join(' ') + ' ')
     if(this.watermark) {

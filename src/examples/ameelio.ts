@@ -6,7 +6,8 @@ const {PresenterLayout, GridLayout, MosaicLayout} = Layouts
 async function basicEncode(encode:boolean=true) {
   // GET LIST OF MEDIA PER USER
   // const videoFolder = path.join(__dirname, '../../videos/ameelio')
-  const videoFolder = path.join(__dirname, '../../videos/corrupt/mkv')
+  // const videoFolder = path.join(__dirname, '../../videos/corrupt/mkv')
+  const videoFolder = path.join(__dirname, '../../videos/ameelio_error2')
   const filenames:string[] = await fs.promises.readdir(videoFolder)
   const users:User[] = extractUsersFromFilenames(filenames,videoFolder)
 
@@ -17,7 +18,7 @@ async function basicEncode(encode:boolean=true) {
   // WIP
   // const watermark: Media = new Media(path.join(videoFolder,'..','images', 'ameelio_logo.png'),-1,false,false,true)
   const encodingOptions: EncodingOptions = {
-    crf: 20,
+    crf: 40,
     loglevel: 'verbose',
     size:{
       w: 1280,
@@ -64,7 +65,7 @@ function extractUsersFromFilenames(filenames:string[], videoFolder:string):User[
    * 5: type (video/audio)
    * 6: extension (default mkv)
    */
-  const regex:RegExp = /(^.*?)_(.*?)_(.*?)@(.*?)-(.*?)\.(.*?)$/
+  const regex:RegExp = /(^.*?)(.*?)(.*?)@(.*?)-(.*?)\.(.*?)$/
 
   const users:User[] = []
   const map:Map<string,User> = new Map()

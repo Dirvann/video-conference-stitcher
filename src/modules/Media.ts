@@ -38,12 +38,23 @@ export default class Media {
     // TODO not looking for stream channels if doesn't contain audio.
     // Would it work with just audio files?
     return new Promise((resolve, reject)  => {
-      Promise.all([this.isBackground?'-1':this.getEntry('format=duration'), this.hasAudio?this.getEntry('stream=channels'):'-1'])
-          .then(([duration ,channels]) => {
-            this.duration = duration==='-1'?-1:Math.round(parseFloat(duration)*1000)
+      Promise.resolve()
+          .then(async () => {
+            let duration:string
+            for(let i = 0; i < 30; i++) {
+              duration = this.isBackground ? '-1' : await this.getEntry('format=duration')
+              this.duration = duration==='-1'?-1:Math.round(parseFloat(duration)*1000)
+              if(!Number.isNaN(this.duration) && !this.isBackground) {
+                break
+              } else {
+                console.log(`The duration of Media ${this.path} parsed as NaN, trying again. (attempt ${i+1}/30)`)
+                await new Promise(res => setTimeout(res, 1000))
+              }
+            }
+            const channels = this.hasAudio?await this.getEntry('stream=channels'):'-1'
             this.audioChannels = parseInt(channels, 10)
             this.initialized = true
-            resolve()
+            resolve(true)
           })
           .catch((err: any) => {
             console.error('error loading video file at ',this.path, err)

@@ -25,7 +25,7 @@ export default {
 
       ls.on('close', code => {
         if(log)console.log(`child process exited with code ${code}`)
-        resolve()
+        resolve(true)
       })
     })
   },
@@ -76,7 +76,7 @@ export default {
 
       process.on('close', code => {
         if(log)console.log(`child process exited with code ${code}`)
-        resolve()
+        resolve(true)
       })
     })
   }
