@@ -23,3 +23,5 @@ lib/app-backup.js
 lib/app-backup.js.map
 
 lib/**/*
+
+types/**

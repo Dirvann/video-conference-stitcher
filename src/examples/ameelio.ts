@@ -66,7 +66,7 @@ function extractUsersFromFilenames(filenames:string[], videoFolder:string):User[
    * 5: type (video/audio)
    * 6: extension (default mkv)
    */
-  const regex:RegExp = /(^.*?)(.*?)(.*?)@(.*?)-(.*?)\.(.*?)$/
+  const regex:RegExp = /(^.*?)_(.*?)_(.*?)@(.*?)-(.*?)\.(.*?)$/
 
   const users:User[] = []
   const map:Map<string,User> = new Map()
