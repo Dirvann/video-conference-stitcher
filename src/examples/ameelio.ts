@@ -1,5 +1,5 @@
 import path from 'path'
-import {User, Layouts, Sequence, Media} from '../index'
+import {User, Layouts, Sequence, Media, VideoLayout, EncodingOptions} from '../index'
 import fs from 'fs'
 const {PresenterLayout, GridLayout, MosaicLayout} = Layouts
 

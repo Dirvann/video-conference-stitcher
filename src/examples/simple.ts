@@ -1,5 +1,5 @@
 import path from 'path'
-import {User, Layouts, Sequence, Media} from '../index'
+import {User, Layouts, Sequence, Media, EncodingOptions, VideoLayout} from '../index'
 const {PresenterLayout, GridLayout, MosaicLayout} = Layouts
 
 function basicEncode(encode:boolean=true) {

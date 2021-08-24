@@ -1,4 +1,5 @@
 import Media from './Media'
+import {Size, VideoBox, VideoLayout} from '../types'
 
 export default class SequenceStep {
   public readonly id: string

@@ -1,15 +1,16 @@
 {
   "name": "video-conference-stitcher-ameelio",
-  "version": "0.1.5",
+  "version": "0.1.11",
   "description": "Combine separately recorded recordings from a video conference into a single video file.",
   "main": "lib/index.js",
-  "types": "./types",
+  "types": "types/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "example": "node lib/examples/simple.js",
     "build": "npx tsc",
     "watch": "npx tsc -w",
-    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix"
+    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
+    "prepublish": "tsc"
   },
   "repository": {
     "type": "git",

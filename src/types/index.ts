@@ -1,9 +1,9 @@
-declare interface Size {
+export interface Size {
   w:number
   h:number
 }
 
-declare interface EncodingOptions {
+export interface EncodingOptions {
   crf?:number
   bitrate?:string
   size:Size,
@@ -16,13 +16,13 @@ declare interface EncodingOptions {
   gmtTimeOffset?:number
 }
 
-declare interface VideoBox {
+export interface VideoBox {
   w:number
   h:number
   x:number
   y:number
 }
 
-declare interface VideoLayout {
+export interface VideoLayout {
   getBoxes(n:number,size:Size) :VideoBox[]
 }

@@ -2,6 +2,7 @@ import Media from './Media'
 import SequenceStep from './SequenceStep'
 import CommandExecutor from './CommandExecutor'
 import User from './User'
+import {EncodingOptions, Size, VideoBox, VideoLayout} from '../types'
 
 
 export default class Sequence {
